@@ -10,9 +10,6 @@ Make a copy of the example files, put them wherever you like, and **mount them**
 * **/config/parameters.properties**: contains parameters like your project number
 * **/config/logback.xml**: contains logging configuration. If you provide email details, a report will be sent to you after the script has run.
 
-
-In order for the application to know where to find these files, *provide the locations as environment variables to the Docker engine*. 
-
 ## How to run this script?
 You need to have **Docker** installed and the engine running.
 Then, in a terminal, launch the script with 
