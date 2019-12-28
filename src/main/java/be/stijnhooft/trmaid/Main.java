@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         if (args.length == 0 || args[0] == null || args[0].equals("")) {
-            throw new IllegalStateException("Provide the parameter file location as first argument to this Java program");
+            throw new IllegalStateException("Provide the parameter file location as first argument to this program");
         }
         String parameterFileLocation = args[0];
 
