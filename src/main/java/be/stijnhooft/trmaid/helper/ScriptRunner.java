@@ -19,7 +19,7 @@ public class ScriptRunner {
 
     public ScriptRunner(Parameters parameters) {
         ChromeOptions chromeOptions = new ChromeOptions();
-        //chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--headless");
         driver = new ChromeDriver(chromeOptions);
 
         this.parameters = parameters;

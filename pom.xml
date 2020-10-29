@@ -114,6 +114,19 @@
 
                 -->
             </plugin>
+
+            <!-- do not deploy maven jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <!-- disable standard deploy -->
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -167,14 +180,4 @@
 
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>portal-nexus-releases</id>
-            <url>https://server.stijnhooft.be/nexus/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>portal-nexus-snapshots</id>
-            <url>https://server.stijnhooft.be/nexus/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
