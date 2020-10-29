@@ -1,5 +1,5 @@
 # TRM Aid
-A script that will fill in a default 8 hours for every day + complete that day.
+A script that will fill in default hours for every day + complete that day.
 
 This avoids angry calls about forgotten TRM completions.
 
@@ -7,7 +7,7 @@ This avoids angry calls about forgotten TRM completions.
 You need to provide 2 files. Check out `src/main/resources` for an **example** of these files.
 Make a copy of the example files, put them wherever you like, and **mount them** when starting the Docker container as:
 
-* **/config/parameters.properties**: contains parameters like your project number
+* **/config/parameters.properties**: contains parameters like your project number, email, password, the hours that need to be filled in, ...
 * **/config/logback.xml**: contains logging configuration. If you provide email details, a report will be sent to you after the script has run.
 
 ## How to run this script?
@@ -18,6 +18,7 @@ Then, in a terminal, launch the script with
 
 ### Run this script daily
 If you want this script to run daily, configure this in your crontab.
+Note that TRM is secured with 2-factor authentication. That means that you'll need to react to the notification on your phone in time!
 
 For Ubuntu: `crontab -l`
 
