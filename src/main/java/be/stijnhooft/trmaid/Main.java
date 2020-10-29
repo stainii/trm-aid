@@ -1,49 +1,37 @@
 package be.stijnhooft.trmaid;
 
+import be.stijnhooft.trmaid.helper.Parameters;
+import be.stijnhooft.trmaid.helper.ScriptRunner;
 import be.stijnhooft.trmaid.script.CompleteAllDaysScript;
-import be.stijnhooft.trmaid.script.EightHoursEveryDayScript;
+import be.stijnhooft.trmaid.script.FillInHoursScript;
+import be.stijnhooft.trmaid.script.LoginScript;
+import be.stijnhooft.trmaid.script.SendLogsScript;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
 @Slf4j
 public class Main {
 
-    private static Marker SMTP_TRIGGER = MarkerFactory.getMarker("SMTP_TRIGGER");
+    public static void main(String[] args) {
+        Parameters parameters = getParameters(args);
+        runScripts(parameters);
+    }
 
 
-    public static void main(String[] args) throws InterruptedException {
+    private static Parameters getParameters(String[] args) {
         if (args.length == 0 || args[0] == null || args[0].equals("")) {
             throw new IllegalStateException("Provide the parameter file location as first argument to this program");
         }
         String parameterFileLocation = args[0];
-
-        runEightHoursEveryDayScript(parameterFileLocation);
-        runCompleteAllDaysScript(parameterFileLocation);
-        sendLogsViaEmail();
+        return new Parameters(parameterFileLocation);
     }
 
-    private static void sendLogsViaEmail() throws InterruptedException {
-        log.info(SMTP_TRIGGER, "All scripts have been run");
-        Thread.sleep(1000L); // give Logback some time to send the mail
-    }
-
-    private static void runCompleteAllDaysScript(String parameterFileLocation) {
-        try {
-            new CompleteAllDaysScript(parameterFileLocation)
-                    .run();
-        } catch (Exception e) {
-            log.error("Something went wrong completing all days up until and including today.", e);
-        }
-    }
-
-    private static void runEightHoursEveryDayScript(String parameterFileLocation) {
-        try {
-            new EightHoursEveryDayScript(parameterFileLocation)
-                    .run();
-        } catch (Exception e) {
-            log.error("Something went wrong filling in eight hours every day up until and including today.", e);
-        }
+    private static void runScripts(Parameters parameters) {
+        ScriptRunner scriptRunner = new ScriptRunner(parameters);
+        scriptRunner.run(
+                new LoginScript(parameters),
+                new FillInHoursScript(parameters),
+                new CompleteAllDaysScript(),
+                new SendLogsScript());
     }
 
 }

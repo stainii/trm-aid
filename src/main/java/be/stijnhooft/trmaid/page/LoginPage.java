@@ -2,11 +2,14 @@ package be.stijnhooft.trmaid.page;
 
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Thread.sleep;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class LoginPage extends WebPage {
@@ -17,38 +20,72 @@ public class LoginPage extends WebPage {
 
     @Override
     Optional<WebElement> getAnElementFromThisPage() {
-        try {
-            return Optional.of(getUsernameField());
-        } catch (NoSuchElementException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Could not find username field on login page.", e);
-            } else {
-                log.info("Could not find username field on login page.");
-            }
+        var emailField = getEmailField();
+        if (emailField.isEmpty()) {
+            log.info("Could not find username field on login page.");
+        }
+        return emailField;
+    }
 
-            return Optional.empty();
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public void fillInLoginDetails(String email, String password) {
+        sleep1Second();
+
+        await().atMost(1, TimeUnit.MINUTES)
+                .until(() -> getEmailField().isPresent());
+        getEmailField().get().sendKeys(email);
+        getSubmitEmailButton().get().click();
+
+        sleep1Second();
+
+        await().atMost(1, TimeUnit.MINUTES)
+                .until(() -> getPasswordField().isPresent());
+        getPasswordField().get().sendKeys(password);
+        getSubmitPasswordButton().get().click();
+
+        sleep1Second();
+
+        await().atMost(10, TimeUnit.MINUTES)
+                .until(() -> getYesButton().isPresent());
+        getYesButton().get().click();
+    }
+
+    private void sleep1Second() {
+        try {
+            sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void typeUsernameAndPassword(String username, String password) {
-        getUsernameField().sendKeys(username);
-        getPasswordField().sendKeys(password);
+    private Optional<WebElement> getEmailField() {
+        return driver.findElements(By.cssSelector("input[type=email]"))
+                .stream()
+                .findFirst();
     }
 
-    public void clickLoginButton() {
-        getLoginButton().click();
+    private Optional<WebElement> getPasswordField() {
+        return driver.findElements(By.id("passwordInput"))
+                .stream()
+                .findFirst();
     }
 
-
-    private WebElement getUsernameField() {
-        return driver.findElement(By.name("login"));
+    private Optional<WebElement> getSubmitEmailButton() {
+        return driver.findElements(By.cssSelector("input[type=submit]"))
+                .stream()
+                .findFirst();
     }
 
-    private WebElement getPasswordField() {
-        return driver.findElement(By.name("passwd"));
+    private Optional<WebElement> getSubmitPasswordButton() {
+        return driver.findElements(By.id("submitButton"))
+                .stream()
+                .findFirst();
     }
 
-    private WebElement getLoginButton() {
-        return driver.findElement(By.id("Log_On"));
+    private Optional<WebElement> getYesButton() {
+        return driver.findElements(By.className("primary"))
+                .stream()
+                .filter(WebElement::isDisplayed)
+                .findFirst();
     }
 }

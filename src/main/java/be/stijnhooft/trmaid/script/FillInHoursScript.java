@@ -6,30 +6,33 @@ import be.stijnhooft.trmaid.helper.Parameters;
 import be.stijnhooft.trmaid.page.CalendarPage;
 import be.stijnhooft.trmaid.page.TimeRecordPage;
 import lombok.extern.slf4j.Slf4j;
+import org.openqa.selenium.WebDriver;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
-public class EightHoursEveryDayScript extends AbstractScript {
+public class FillInHoursScript implements Script {
+    private final Parameters parameters;
     private CalendarPage calendarPage;
     private CalendarDayPage calendarDayPage;
     private TimeRecordPage timeRecordPage;
 
-    public EightHoursEveryDayScript(String parameterFileLocation) {
-        super(parameterFileLocation);
+    public FillInHoursScript(Parameters parameters) {
+        this.parameters = parameters;
+    }
+
+    @Override
+    public void run(WebDriver driver) {
         DateUtil dateUtil = new DateUtil();
         calendarPage = new CalendarPage(driver, dateUtil);
         calendarDayPage = new CalendarDayPage(driver);
         timeRecordPage = new TimeRecordPage(driver);
-    }
 
-
-    protected void runSpecificPartOfScript() {
         log.info("Determining which days need to be filled in and completed.");
 
         await() .atMost(30, SECONDS)
-                .until(() -> calendarPage.isOnThisPage());
+                .until(calendarPage::isOnThisPage);
 
         calendarPage.getWeekDaysUntilAndIncludingToday()
                 .forEach(day ->  {
@@ -38,7 +41,7 @@ public class EightHoursEveryDayScript extends AbstractScript {
                         addMissingTimeRecordsForDay(day);
                     } catch (Exception e) {
                         log.error("Something went wrong when filling in day " + day, e);
-                        reset();
+                        driver.get(parameters.get(Parameters.URL));
                     }
                 });
     }
@@ -47,12 +50,12 @@ public class EightHoursEveryDayScript extends AbstractScript {
         log.info("Checking for missing time records for day {}", dayNumber);
 
         await().atMost(30, SECONDS)
-                .until(() -> calendarPage.isOnThisPage());
+                .until(calendarPage::isOnThisPage);
 
         calendarPage.clickOnDay(dayNumber);
 
         await().atMost(30, SECONDS)
-                .until(() -> calendarDayPage.isOnThisPage());
+                .until(calendarDayPage::isOnThisPage);
 
         if (calendarDayPage.containsRecordForProject(parameters.get(Parameters.PROJECT_NUMBER)) ||
                 calendarDayPage.containsAbsence()) {
@@ -62,14 +65,14 @@ public class EightHoursEveryDayScript extends AbstractScript {
 
             await()
                 .atMost(30, SECONDS)
-                .until(() -> timeRecordPage.isOnThisPage());
+                .until(timeRecordPage::isOnThisPage);
 
             timeRecordPage.selectProject(parameters.get(Parameters.PROJECT_NUMBER));
             timeRecordPage.selectTask(parameters.get(Parameters.PROJECT_TASK_NUMBER));
-            timeRecordPage.typeStartTimeAMField("09:00");
-            timeRecordPage.typeEndTimeAMField("12:00");
-            timeRecordPage.typeStartTimePMField("12:30");
-            timeRecordPage.typeEndTimePMField("17:30");
+            timeRecordPage.typeStartTimeAMField(parameters.get(Parameters.TIME_MORNING_START));
+            timeRecordPage.typeEndTimeAMField(parameters.get(Parameters.TIME_MORNING_END));
+            timeRecordPage.typeStartTimePMField(parameters.get(Parameters.TIME_AFTERNOON_START));
+            timeRecordPage.typeEndTimePMField(parameters.get(Parameters.TIME_AFTERNOON_END));
             timeRecordPage.clickSaveButton();
             log.info("Added time record.");
 
@@ -80,9 +83,7 @@ public class EightHoursEveryDayScript extends AbstractScript {
         // going back
         calendarDayPage.clickCalendarLink();
         await().atMost(30, SECONDS)
-                .until(() -> calendarPage.isOnThisPage());
+                .until(calendarPage::isOnThisPage);
     }
-
-
 
 }
